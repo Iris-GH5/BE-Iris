@@ -1,13 +1,33 @@
 package main
 
-import "github.com/gofiber/fiber/v2"
+import (
+	"log"
+	"os"
+
+	"github.com/Iris-GH5/BE-Iris/database"
+	"github.com/Iris-GH5/BE-Iris/database/migrations"
+	"github.com/Iris-GH5/BE-Iris/route"
+	"github.com/joho/godotenv"
+
+	"github.com/gofiber/fiber/v2"
+)
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file", err)
+	}
+	database.InitDatabase()
+	migrations.RunMigrations()
+
 	app := fiber.New()
 
-	app.Get("/", func(c *fiber.Ctx) error {
-		return c.SendString("Hello, World!")
-	})
+	route.SetupRoutes(app)
 
-	app.Listen(":3000")
+	port := os.Getenv("PORT")
+	if port == "" {
+		port = "8080"
+	}
+
+	log.Fatal(app.Listen("0.0.0.0:" + port))
 }
